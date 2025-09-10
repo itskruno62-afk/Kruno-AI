@@ -1,0 +1,160 @@
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Bot, MessageSquare, Image as ImageIcon, Settings, Sparkles } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+const navigationItems = [
+  {
+    title: "Chat",
+    url: createPageUrl("Chat"),
+    icon: MessageSquare,
+  },
+  {
+    title: "Image Generator",
+    url: createPageUrl("ImageGenerator"),
+    icon: ImageIcon,
+  },
+];
+
+export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <style>{`
+          :root {
+            --primary: 220 100% 50%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 220 14.3% 95.9%;
+            --secondary-foreground: 220.9 39.3% 11%;
+            --accent: 220 14.3% 95.9%;
+            --accent-foreground: 220.9 39.3% 11%;
+          }
+          
+          .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+          
+          .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+          }
+        `}</style>
+        
+        <Sidebar className="border-r border-white/20 glass-effect">
+          <SidebarHeader className="border-b border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="font-bold text-xl gradient-text">AI Assistant</h2>
+                <p className="text-xs text-slate-500">Your intelligent companion</p>
+              </div>
+            </div>
+          </SidebarHeader>
+          
+          <SidebarContent className="p-3">
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-slate-500 uppercase tracking-wider px-3 py-2">
+                Navigation
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navigationItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild 
+                        className={`hover:bg-white/50 hover:text-blue-700 transition-all duration-300 rounded-xl mb-1 ${
+                          location.pathname === item.url ? 'bg-white/60 text-blue-700 shadow-sm' : ''
+                        }`}
+                      >
+                        <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
+                          <item.icon className="w-5 h-5" />
+                          <span className="font-medium">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-slate-500 uppercase tracking-wider px-3 py-2">
+                AI Modes
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <div className="px-3 py-2 space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">Creative</p>
+                      <p className="text-xs text-slate-500">Imaginative & artistic</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-lg flex items-center justify-center">
+                      <Settings className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">Professional</p>
+                      <p className="text-xs text-slate-500">Business & formal</p>
+                    </div>
+                  </div>
+                </div>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">AI</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-700 text-sm">Ready to help</p>
+                <p className="text-xs text-slate-500">Ask me anything!</p>
+              </div>
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+
+        <main className="flex-1 flex flex-col min-w-0">
+          {/* Mobile header */}
+          <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 px-6 py-4 md:hidden">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="hover:bg-white/50 p-2 rounded-lg transition-colors duration-200" />
+              <h1 className="text-xl font-bold gradient-text">AI Assistant</h1>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-hidden">
+            {children}
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+}

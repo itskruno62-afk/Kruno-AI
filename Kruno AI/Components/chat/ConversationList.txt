@@ -1,0 +1,100 @@
+
+import React from "react";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+
+const modeColors = {
+  creative: "bg-purple-100 text-purple-700 border-purple-200",
+  professional: "bg-blue-100 text-blue-700 border-blue-200",
+  casual: "bg-green-100 text-green-700 border-green-200",
+  technical: "bg-orange-100 text-orange-700 border-orange-200"
+};
+
+export default function ConversationList({ 
+  conversations, 
+  selectedId, 
+  onSelect, 
+  onNewConversation,
+  onDelete 
+}) {
+  return (
+    <div className="space-y-4">
+      <Button
+        onClick={onNewConversation}
+        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+      >
+        <Plus className="w-4 h-4 mr-2" />
+        New Chat
+      </Button>
+      
+      <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+        {conversations.map((conversation) => (
+          <motion.div
+            key={conversation.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card
+              className={`p-4 cursor-pointer transition-all duration-200 hover:shadow-md glass-effect ${
+                selectedId === conversation.id 
+                  ? 'ring-2 ring-blue-500 bg-white/60' 
+                  : 'hover:bg-white/50'
+              }`}
+              onClick={() => onSelect(conversation.id)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                    <h3 className="font-medium text-sm text-slate-700 truncate">
+                      {conversation.title}
+                    </h3>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary" className={modeColors[conversation.ai_mode]}>
+                      {conversation.ai_mode}
+                    </Badge>
+                    
+                    <span className="text-xs text-slate-400">
+                      {conversation.last_activity ? 
+                        format(new Date(conversation.last_activity), 'MMM d') : 
+                        'New'
+                      }
+                    </span>
+                  </div>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(conversation.id);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+        
+        {conversations.length === 0 && (
+          <Card className="p-6 text-center glass-effect">
+            <MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">No conversations yet</p>
+            <p className="text-xs text-slate-400">Start your first chat!</p>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

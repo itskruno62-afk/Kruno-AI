@@ -1,0 +1,180 @@
+import React, { useState } from "react";
+import { GenerateImage } from "@/integrations/Core";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, Image as ImageIcon, Loader2, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function ImageGenerator() {
+  const [prompt, setPrompt] = useState("");
+  const [generatedImages, setGeneratedImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const generateImage = async () => {
+    if (!prompt.trim() || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const result = await GenerateImage({ prompt });
+      
+      const newImage = {
+        id: Date.now(),
+        url: result.url,
+        prompt,
+        timestamp: new Date().toISOString()
+      };
+
+      setGeneratedImages(prev => [newImage, ...prev]);
+      setPrompt("");
+    } catch (error) {
+      console.error("Error generating image:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const downloadImage = async (url, prompt) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `generated-${prompt.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      generateImage();
+    }
+  };
+
+  return (
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+            <ImageIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold gradient-text mb-2">AI Image Generator</h1>
+          <p className="text-slate-600 text-lg">Transform your ideas into stunning visuals</p>
+        </motion.div>
+
+        <Card className="mb-8 glass-effect shadow-xl border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl text-slate-700">
+              <Sparkles className="w-5 h-5 text-purple-500" />
+              Create Your Masterpiece
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Describe the image you want to create... Be detailed and creative!"
+              className="min-h-[120px] bg-white/80 border-purple-200 focus:border-purple-400 transition-colors"
+              disabled={isLoading}
+            />
+            
+            <div className="flex justify-center">
+              <Button
+                onClick={generateImage}
+                disabled={!prompt.trim() || isLoading}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Creating Magic...
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="w-5 h-5 mr-2" />
+                    Generate Image
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <AnimatePresence>
+          {generatedImages.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold text-slate-700 text-center">Your Generated Images</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {generatedImages.map((image, index) => (
+                  <motion.div
+                    key={image.id}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: index * 0.1, duration: 0.4 }}
+                  >
+                    <Card className="overflow-hidden glass-effect shadow-lg hover:shadow-xl transition-all duration-300 group border-white/20">
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={image.url}
+                          alt={image.prompt}
+                          className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 hover:bg-white shadow-lg"
+                          onClick={() => downloadImage(image.url, image.prompt)}
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-slate-600 line-clamp-3">
+                          {image.prompt}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-2">
+                          {new Date(image.timestamp).toLocaleDateString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {generatedImages.length === 0 && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <div className="w-24 h-24 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-6 opacity-50">
+              <ImageIcon className="w-12 h-12 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-600 mb-2">No images yet</h3>
+            <p className="text-slate-500">Start creating by describing your vision above!</p>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,68 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the conversation"
+    },
+    "ai_mode": {
+      "type": "string",
+      "enum": [
+        "creative",
+        "professional",
+        "casual",
+        "technical"
+      ],
+      "default": "casual",
+      "description": "AI personality mode"
+    },
+    "messages": {
+      "type": "array",
+      "description": "Array of messages in the conversation",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image"
+            ],
+            "default": "text"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "last_activity": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "ai_mode"
+  ],
+  "rls": {
+    "write": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}
